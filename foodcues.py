@@ -40,7 +40,7 @@ def main():
 					"No log files were found in working directory.\n" + 
 					"Please place the script file into the proper directory and try again."	)
 
-	print "\nPsychoPy log files found in working directory:\n"
+	print "\nFoodcues log files found in working directory:\n"
 
 	for x in list(enumerate(log_list)):
 		print "    ", 
