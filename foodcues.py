@@ -10,9 +10,7 @@
 ###					Food Cues log file output format is constant
 
 import csv
-import glob
 import os
-import re
 import sys
 import time
 
@@ -28,6 +26,45 @@ conditions = ['Neutral', 'HiCal', 'LoCal']
 keys = ['1!', '2@', '3#', '4$']
 question = 'images/question_screen.jpg'
 
+def main():
+	print "Script file directory: %s" % home_dir
+	log_list = []
+
+	for root, dirs, files in os.walk(home_dir):
+	    for f in files:
+	        if f.endswith('_maintime.txt'):
+	             log_list.append(os.path.join(root, f))
+
+	if not log_list:
+		sys.exit(	"EXITING OPERATION\n" + 
+					"No log files were found in working directory.\n" + 
+					"Please place the script file into the proper directory and try again."	)
+
+	print "\nPsychoPy log files found in working directory:\n"
+
+	for x in list(enumerate(log_list)):
+		print "    ", 
+		print (x[0], "/".join(x[1].strip("/").split('/')[1:]))
+	print ""
+
+	log_input = raw_input("Please enter the desired log file index (or multiple indices separated by spaces): ")
+
+	if not log_input:
+		sys.exit(	"EXITING OPERATION\n" + 
+					"No log files were properly selected"	)
+
+	log_index = log_input.split()
+	log_index = [int(a) for a in log_index]
+
+	if not all(n in range(len(log_list)) for n in log_index):
+		sys.exit(	"EXITING OPERATION\n" +
+					"INVALID ENTRY OF FILE INDICES"	)
+
+	input_list = [log_list[n] for n in log_index]
+	run_analysis(input_list)
+
+	print "\nOPERATION COMPLETED " + time.strftime("%d %b %Y %H:%M:%S", time.localtime())
+
 def analysis(in_file):
 	with open(in_file) as txtfile: 
 		content = txtfile.readlines()
@@ -35,9 +72,8 @@ def analysis(in_file):
 	count = 0
 	output = []
 	# t1 = check if iterator has encountered row with condition
-	# t2 = check if iterator has encountered hunger rating slide
-	# t3 = check if iterator has encountered hunger response
-	t1 = t2 = t3 = False
+	# t2 = check if iterator has encountered hunger question
+	t1 = t2 = False
 	for row in content:
 		check = [k in row for k in keys]
 
@@ -68,9 +104,11 @@ def analysis(in_file):
 
 	print "\tTotal Key Presses: %d" % count
 
-	subj = in_file.split('_', 1)[0]
-	out_dir = "../foodcues_parsed_logs"
+	subj = os.path.basename(in_file).split('_', 1)[0]
+	out_dir = "foodcues_parsed_logs"
+	print out_dir
 	out_file = os.path.join(out_dir, subj + "_foodcues_parsed.csv")
+	print out_file
 
 	if not os.path.exists(out_dir):
 		os.makedirs(out_dir)
@@ -79,39 +117,6 @@ def analysis(in_file):
 		writer = csv.writer(out_csv, delimiter = ',', quotechar = '"')
 		writer.writerow(['Condition', 'Response_Key'])
 		writer.writerows(output)
-
-def main():
-	print "Script file directory: %s" % home_dir
-	log_list = glob.glob('*.txt')
-	print "\nFood Cues log files found in script file directory: "
-	for row in log_list:
-		print '\t' + row
-	print ""
-
-	subj_input = raw_input("Please enter the desired subject code (or multiple indices separated by spaces): ")
-
-	if not subj_input: 
-		sys.exit(	"EXITING OPERATION\n" + 
-					"No log files were properly selected"	)
-
-	subj_list = subj_input.split()
-
-	for s in subj_list:
-		if not any(s.lower() in x[ :3].lower() for x in log_list):
-			sys.exit(	"EXITING OPERATION\n" +
-						"Subject " + s + " was not found")
-
-	## More pythonic method but does not allow for specification of error source
-	# if not all(any(s.lower() in x.lower() for x in log_list) for s in subj_list):
-	# 	sys.exit(	"EXITING OPERATION\n" +
-	# 				"INVALID ENTRY OF SUBJECTS"	)
-
-	file_list = []
-	for x in log_list:
-		if any(s in x for s in subj_list) and '_maintime.txt' in x:
-			file_list.append(x)
-
-	run_analysis(file_list)
 
 def run_analysis(arr):
 	error_files = []
