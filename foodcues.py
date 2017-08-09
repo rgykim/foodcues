@@ -27,25 +27,24 @@ keys = ['1!', '2@', '3#', '4$']
 question = 'images/question_screen.jpg'
 
 def main():
-	print "Script file directory: %s" % home_dir
+	subject_input = raw_input("subject ID: ")
 	log_list = []
 
 	for root, dirs, files in os.walk(home_dir):
 	    for f in files:
-	        if f.endswith('_maintime.txt'):
-	             log_list.append(os.path.join(root, f))
+	        if subject_input.lower() in f.lower() and f.lower().endswith('_maintime.txt'):
+	             log_list.append([root, f])
 
-	if not log_list:
-		sys.exit(	"EXITING OPERATION\n" + 
-					"No log files were found in working directory.\n" + 
-					"Please place the script file into the proper directory and try again."	)
-
-	print "\nFoodcues log files found in working directory:\n"
-
-	for x in list(enumerate(log_list)):
-		print "    ", 
-		print (x[0], "/".join(x[1].strip("/").split('/')[1:]))
-	print ""
+	f_index = 0
+	if len(log_list) < 1:
+		sys.exit("No foodcues task files for provided subject ID.")
+	elif len(log_list) > 1:
+		print "Search results: "
+		for x in list(enumerate(log_list)):
+			print "    ", 
+			print ("%d : " % x[0]) + os.path.join(x[1][0], x[1][1])
+			# print (x[0], "/".join(x[1].strip("/").split('/')[1:]))
+		print ""
 
 	log_input = raw_input("Please enter the desired log file index (or multiple indices separated by spaces): ")
 
@@ -60,13 +59,13 @@ def main():
 		sys.exit(	"EXITING OPERATION\n" +
 					"INVALID ENTRY OF FILE INDICES"	)
 
-	input_list = [log_list[n] for n in log_index]
+	input_list = [os.path.join(log_list[n][0], log_list[n][1][ :-len('_maintime.txt')]) for n in log_index]
 	run_analysis(input_list)
 
 	print "\nOPERATION COMPLETED " + time.strftime("%d %b %Y %H:%M:%S", time.localtime())
 
 def analysis(in_file):
-	with open(in_file) as txtfile: 
+	with open(in_file + '_maintime.txt') as txtfile: 
 		content = txtfile.readlines()
 
 	count = 0
@@ -104,16 +103,7 @@ def analysis(in_file):
 
 	print "\tTotal Key Presses: %d" % count
 
-	subj = os.path.basename(in_file).split('_', 1)[0]
-	out_dir = "foodcues_parsed_logs"
-	print out_dir
-	out_file = os.path.join(out_dir, subj + "_foodcues_parsed.csv")
-	print out_file
-
-	if not os.path.exists(out_dir):
-		os.makedirs(out_dir)
-
-	with open(out_file, 'wb') as out_csv:
+	with open(in_file + '_foodcues_parsed.csv', 'wb') as out_csv:
 		writer = csv.writer(out_csv, delimiter = ',', quotechar = '"')
 		writer.writerow(['Condition', 'Response_Key'])
 		writer.writerows(output)
@@ -122,7 +112,7 @@ def run_analysis(arr):
 	error_files = []
 	for s in arr:
 		try:
-			print "\n::::: PARSING %s :::::" % s
+			print "\n::::: PARSING %s_maintime.txt :::::" % s
 			analysis(s)
 		except KeyError: 
 			print ">> ERROR READING " + s
