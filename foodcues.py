@@ -1,11 +1,6 @@
 #!/usr/bin/env python
 
-### Food Cues Log Parsing Script
-### Creator: Robert Kim
-### Last Modifier: Robert Kim
-### Version Date: 23 Feb 2017
 ### Python 2.7 
-
 ### Assumptions: 	Food Cues log file naming format is constant
 ###					Food Cues log file output format is constant
 
