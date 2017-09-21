@@ -38,7 +38,7 @@ def main():
 	f_index = 0
 	if len(log_list) < 1:
 		sys.exit("No foodcues task files for provided subject ID.")
-	elif len(log_list) > 1:
+	else:
 		print "Search results: "
 		for x in list(enumerate(log_list)):
 			print "    ", 
