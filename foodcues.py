@@ -1,6 +1,10 @@
-#!/usr/bin/env python
+#!/usr/bin/python2.7
 
+### Food Cues Log Parsing Script
+### Creator: Robert Kim
+### Last Modifier: Robert Kim
 ### Python 2.7 
+
 ### Assumptions: 	Food Cues log file naming format is constant
 ###					Food Cues log file output format is constant
 
@@ -18,7 +22,6 @@ home_dir = os.path.dirname(os.path.abspath(__file__))
 os.chdir(home_dir)
 
 conditions = ['Neutral', 'HiCal', 'LoCal']
-keys = ['1!', '2@', '3#', '4$']
 question = 'images/question_screen.jpg'
 
 def main():
@@ -69,9 +72,7 @@ def analysis(in_file):
 	# t2 = check if iterator has encountered hunger question
 	t1 = t2 = False
 	for row in content:
-		check = [k in row for k in keys]
-
-		if any(check):
+		if 'pressed' in row:
 			count += 1
 
 		if 'condition' in row:
@@ -86,10 +87,9 @@ def analysis(in_file):
 		if t1 and question in row:
 			t2 = True
 
-		if t1 and t2 and any(check):
+		if t1 and t2 and 'pressed' in row:
 			t1 = t2 = False
-			i = [i for i, x in enumerate(check) if x][0]
-			output[-1].append(keys[i][0])
+			output[-1].append(row[4:5])
 
 		if not t1 and t2:
 			sys.exit(	"EXITING OPERATION\n" + 
